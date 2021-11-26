@@ -1,0 +1,27 @@
+{
+	"kind": "collectionType",
+	"collectionName": "messages",
+	"info": {
+		"name": "message"
+	},
+	"options": {
+		"draftAndPublish": false,
+		"timestamps": true,
+		"increments": true,
+		"comment": ""
+	},
+	"attributes": {
+		"name": {
+			"type": "string",
+			"required": true
+		},
+		"message": {
+			"type": "text",
+			"required": true
+		},
+		"email": {
+			"type": "email",
+			"required": true
+		}
+	}
+}
