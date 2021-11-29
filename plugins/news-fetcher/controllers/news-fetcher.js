@@ -6,7 +6,8 @@ const FileReader = require("filereader");
 const fetch = require("node-fetch");
 const FormData = require("form-data");
 const InputModalStepperProvider = require("strapi-plugin-upload");
-// const url = "https://london-post.co.uk/londoners-back-increasing-captioned-performances-and-events-as-venues-re-open/";
+const multiConvert = require("multi-convert");
+const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 /**
  * news-fetcher.js controller
@@ -18,7 +19,11 @@ const uploadByUrl = async (url) => {
 	fetch(url).then((response) => response.blob()).then(function (myBlob) {
 		const reader = new FileReader();
 		const formData = new FormData();
-		myBlob.arrayBuffer().then((response) => formData.append("files", new Int8Array(response)));
+		myBlob
+			.arrayBuffer()
+			.then((response) => multiConvert({ data: response }))
+			.then((response) => formData("files", response.buffer))
+			.then(console.log(formData));
 
 		// const sendBlob = { files: reader.readAsArrayBuffer(myBlob) };
 		// const formData = new FormData(sendBlob);
@@ -106,6 +111,11 @@ module.exports = {
 
 	uploadByUrl : async (ctx) => {
 		const url = ctx.request.body.url;
+		try {
+			uploadByUrl(url);
+		} catch (err) {
+			ctx.send(err);
+		}
 	},
 
 	scrapeNews  : async (ctx) => {
@@ -132,20 +142,20 @@ module.exports = {
 					scrapeImg = $(this).attr("content");
 				});
 
-				// uploadByUrl(scrapeImg);
+				uploadByUrl(scrapeImg);
 
 				const metadata = { title: scrapeTitle, description: scrapeDescription, image: scrapeImg, url: url };
 
-				const result = strapi
-					.query("article", "news-fetcher")
-					.create(metadata)
-					.then(ctx.send({ message: "The article has been added" }))
-					.catch((err) => {
-						ctx.send({
-							message : "The article could not be added to the database",
-							error   : err
-						});
-					});
+				// const result = strapi
+				// 	.query("article", "news-fetcher")
+				// 	.create(metadata)
+				// 	.then(ctx.send({ message: "The article has been added" }))
+				// 	.catch((err) => {
+				// 		ctx.send({
+				// 			message : "The article could not be added to the database",
+				// 			error   : err
+				// 		});
+				// 	});
 			});
 			await browser.close();
 		} catch (err) {
