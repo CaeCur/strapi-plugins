@@ -2,9 +2,10 @@
 
 const puppeteer = require("puppeteer");
 const cheerio = require("cheerio");
-const fs = require("fs");
+const FileReader = require("filereader");
 const fetch = require("node-fetch");
 const FormData = require("form-data");
+const InputModalStepperProvider = require("strapi-plugin-upload");
 // const url = "https://london-post.co.uk/londoners-back-increasing-captioned-performances-and-events-as-venues-re-open/";
 
 /**
@@ -15,23 +16,76 @@ const FormData = require("form-data");
 
 const uploadByUrl = async (url) => {
 	fetch(url).then((response) => response.blob()).then(function (myBlob) {
+		const reader = new FileReader();
 		const formData = new FormData();
-		formData.append("files", myBlob);
-		console.log(formData);
-		fetch("http://localhost:1337/upload", {
-			method  : "POST",
-			headers : {},
-			body    : formData
-		})
-			.then((response) => {
-				const result = response.json();
-				console.log("result", result);
-			})
-			.catch(function (err) {
-				console.log("error:");
-				console.log(err);
-			});
+		myBlob.arrayBuffer().then((response) => formData.append("files", new Int8Array(response)));
+
+		// const sendBlob = { files: reader.readAsArrayBuffer(myBlob) };
+		// const formData = new FormData(sendBlob);
+		// const files = JSON.stringify(myBlob);
+		// console.log(files);
+		// formData.append("files", new Int8Array(response));
+		// console.log("formData was created");
+		// console.log(formData);
+		// fetch("http://localhost:1337/upload", {
+		// 	method  : "POST",
+		// 	headers : {},
+		// 	body    : formData
+		// })
+		// 	.then((response) => {
+		// 		const result = response.json();
+		// 		console.log("result", result);
+		// 	})
+		// 	.catch(function (err) {
+		// 		console.log("error:");
+		// 		console.log(err);
+		// 	});
 	});
+
+	/************************** */
+	// fetch(url, { method: "GET", headers: {} })
+	// 	.then((response) => {
+	// 		response.arrayBuffer().then(function (buffer) {
+	// 			console.log(buffer.Uint8Contents);
+	// 			const formData = new FormData();
+	// 			formData.append("files", buffer);
+	// 			console.log(formData);
+	// 			fetch("http://localhost:1337/upload", {
+	// 				method  : "POST",
+	// 				headers : {},
+	// 				body    : formData
+	// 			})
+	// 				.then((response) => {
+	// 					const result = response.json();
+	// 					console.log("result", result);
+	// 				})
+	// 				.catch(function (err) {
+	// 					console.log("error:");
+	// 					console.log(err);
+	// 				});
+	// 		});
+	// 	})
+	// 	.catch((err) => {
+	// 		console.log(err);
+	// 	});
+	/*********************************/
+	//.then((response) => response.blob()).then(function (myBlob) {
+	// const formData = new FormData();
+	// formData.append("files", myBlob);
+	// console.log(formData);
+	// fetch("http://localhost:1337/upload", {
+	// 	method  : "POST",
+	// 	headers : {},
+	// 	body    : formData
+	// })
+	// 	.then((response) => {
+	// 		const result = response.json();
+	// 		console.log("result", result);
+	// 	})
+	// 	.catch(function (err) {
+	// 		console.log("error:");
+	// 		console.log(err);
+	// 	});
 };
 
 module.exports = {
@@ -41,7 +95,7 @@ module.exports = {
    * @return {Object}
    */
 
-	index      : async (ctx) => {
+	index       : async (ctx) => {
 		// Add your own logic here.
 
 		// Send 200 `ok`
@@ -50,12 +104,11 @@ module.exports = {
 		});
 	},
 
-	// uploadByUrl : async (ctx) => {
-	// 	const url = ctx.request.body.url;
-	// 	uploadByUrl(url);
-	// },
+	uploadByUrl : async (ctx) => {
+		const url = ctx.request.body.url;
+	},
 
-	scrapeNews : async (ctx) => {
+	scrapeNews  : async (ctx) => {
 		try {
 			const url = ctx.request.body.url;
 
@@ -79,6 +132,8 @@ module.exports = {
 					scrapeImg = $(this).attr("content");
 				});
 
+				// uploadByUrl(scrapeImg);
+
 				const metadata = { title: scrapeTitle, description: scrapeDescription, image: scrapeImg, url: url };
 
 				const result = strapi
@@ -88,7 +143,7 @@ module.exports = {
 					.catch((err) => {
 						ctx.send({
 							message : "The article could not be added to the database",
-							error   : ctx.response
+							error   : err
 						});
 					});
 			});
