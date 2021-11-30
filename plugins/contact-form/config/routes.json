@@ -3,7 +3,15 @@
 		{
 			"method": "GET",
 			"path": "/",
-			"handler": "contact-form.index",
+			"handler": "contact-form.find",
+			"config": {
+				"policies": []
+			}
+		},
+		{
+			"method": "GET",
+			"path": "/:id",
+			"handler": "contact-form.findOne",
 			"config": {
 				"policies": []
 			}
