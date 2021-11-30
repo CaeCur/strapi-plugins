@@ -26,7 +26,7 @@ const uploadByUrl = async (url) => {
 			.then(() =>
 				fetch("http://localhost:1337/upload", {
 					method  : "POST",
-					headers : { "Content-Type": "multipart/form-data" },
+					headers : {},
 					body    : formData
 				})
 					.then((res) => console.log(res))
