@@ -7,7 +7,7 @@ const fetch = require("node-fetch");
 const FormData = require("form-data");
 const InputModalStepperProvider = require("strapi-plugin-upload");
 const multiConvert = require("multi-convert");
-const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+// const url = "https://london-post.co.uk/londoners-back-increasing-captioned-performances-and-events-as-venues-re-open/";
 
 /**
  * news-fetcher.js controller
@@ -22,8 +22,16 @@ const uploadByUrl = async (url) => {
 		myBlob
 			.arrayBuffer()
 			.then((response) => multiConvert({ data: response }))
-			.then((response) => formData("files", response.buffer))
-			.then(console.log(formData));
+			.then((response) => formData.append("files", response.buffer))
+			.then(() =>
+				fetch("http://localhost:1337/upload", {
+					method  : "POST",
+					headers : {},
+					body    : formData
+				})
+					.then((res) => console.log(res))
+					.catch((err) => console.log(err))
+			);
 
 		// const sendBlob = { files: reader.readAsArrayBuffer(myBlob) };
 		// const formData = new FormData(sendBlob);
@@ -111,11 +119,7 @@ module.exports = {
 
 	uploadByUrl : async (ctx) => {
 		const url = ctx.request.body.url;
-		try {
-			uploadByUrl(url);
-		} catch (err) {
-			ctx.send(err);
-		}
+		uploadByUrl(url);
 	},
 
 	scrapeNews  : async (ctx) => {
