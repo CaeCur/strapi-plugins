@@ -1,6 +1,9 @@
 "use strict";
 
 const { default: createStrapi } = require("strapi");
+const { sanitizeEntity } = require("strapi-utils");
+
+const model = { source: "contact-form", model: "message" };
 
 /**
  * contact-form.js controller
@@ -15,21 +18,22 @@ module.exports = {
    * @return {Object}
    */
 
-	index       : async (ctx) => {
-		// Add your own logic here.
+	find        : async (ctx) => {
+		const result = await strapi.query("message", "contact-form").find();
 
-		// Send 200 `ok`
-		ctx.send({
-			message : "ok"
-		});
+		return result;
 	},
 
+	findOne     : async (ctx) => {
+		const { id } = ctx.params;
+		const result = await strapi.query("message", "contact-form").findOne({ id });
+
+		return result;
+	},
 	postMessage : async (ctx) => {
 		const data = ctx.request.body;
 
 		const result = await strapi.query("message", "contact-form").create(data);
-
-		// ctx.send({ message: "this is a message returned by postMessage", context: data });
 
 		return result;
 	}
